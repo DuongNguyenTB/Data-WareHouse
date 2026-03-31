@@ -1,15 +1,36 @@
+// src/app.js
 const express = require('express');
 const cors = require('cors');
 
-// Khởi tạo ứng dụng Express
+// 1. IMPORT CÁC ĐỊNH TUYẾN (Chỉ khai báo 1 lần duy nhất ở đây)
+const authRoutes = require('./routes/authRoutes');
+const productRoutes = require('./routes/productRoutes');
+const supplierRoutes = require('./routes/supplierRoutes');
+const inventoryRoutes = require('./routes/inventoryRoutes');
+const outboundRoutes = require('./routes/outboundRoutes');
+const auditRoutes = require('./routes/auditRoutes');
+const analyticsRoutes = require('./routes/analyticsRoutes');
+
+// Import Middleware bẫy lỗi
+const errorHandler = require('./middlewares/errorMiddleware');
+
 const app = express();
 
-// 1. Khai báo Middlewares rào chắn cơ bản
-app.use(cors()); // Cho phép Frontend (React) gọi API
-app.use(express.json()); // Phân tích payload JSON từ Client
+// 2. CẤU HÌNH MIDDLEWARES CƠ BẢN [4]
+app.use(cors()); 
+app.use(express.json()); 
 app.use(express.urlencoded({ extended: true }));
 
-// 2. Route kiểm tra sức khỏe hệ thống (Health Check)
+// 3. ĐĂNG KÝ CÁC LUỒNG API (ENDPOINTS) [1, 2]
+app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/products', productRoutes);
+app.use('/api/v1/suppliers', supplierRoutes);
+app.use('/api/v1/inventory', inventoryRoutes);
+app.use('/api/v1/outbound', outboundRoutes);
+app.use('/api/v1/audit', auditRoutes);
+app.use('/api/v1/analytics', analyticsRoutes);
+
+// Route kiểm tra sức khỏe hệ thống
 app.get('/api/v1/health', (req, res) => {
     res.status(200).json({ 
         status: 'success', 
@@ -17,35 +38,8 @@ app.get('/api/v1/health', (req, res) => {
     });
 });
 
-const errorHandler = require('./middlewares/errorMiddleware');
-module.exports = app;
-
-// Import và gắn các luồng API
-const productRoutes = require('./routes/productRoutes');
-app.use('/api/v1/products', productRoutes);
-
-const inventoryRoutes = require('./routes/inventoryRoutes');
-app.use('/api/v1/inventory', inventoryRoutes);
-
-const outboundRoutes = require('./routes/outboundRoutes');
-app.use('/api/v1/outbound', outboundRoutes);
-
-const analyticsRoutes = require('./routes/analyticsRoutes');
-app.use('/api/v1/analytics', analyticsRoutes);
-
-const auditRoutes = require('./routes/auditRoutes');
-app.use('/api/v1/audit', auditRoutes);
-
-const authRoutes = require('./routes/authRoutes');
-app.use('/api/v1/auth', authRoutes);
-
-const inventoryRoutes = require('./routes/inventoryRoutes');
-router.post('/transfer', authenticateUser, InventoryController.handleTransfer); 
-
-const analyticsRoutes = require('./routes/analyticsRoutes');
-router.get('/summary', authenticateUser, AnalyticsController.getDashboardSummary);
-
-const supplierRoutes = require('./routes/supplierRoutes');
-app.use('/api/v1/suppliers', supplierRoutes);
-
+// 4. BẪY LỖI TOÀN CỤC (PHẢI NẰM CUỐI CÙNG TRƯỚC EXPORTS) 
 app.use(errorHandler);
+
+// 5. XUẤT APP (Luôn nằm ở dòng cuối cùng của file)
+module.exports = app;
